@@ -33,10 +33,10 @@ export function fillFace(e, c) {
   e.classList.toggle('red', c.s === 1 || c.s === 2); e.classList.add('s' + c.s);
   e.setAttribute('role', 'img');
   e.setAttribute('aria-label', `${({ A: 'Ace', J: 'Jack', Q: 'Queen', K: 'King' })[r] || r} of ${['spades', 'hearts', 'diamonds', 'clubs'][c.s]}`);
-  const ix = el('div', 'ix'); ix.dataset.s = s; ix.append(document.createTextNode(r)); ix.append(el('i', '', s));
+  const ix = el('div', 'ix'); ix.dataset.s = s; ix.setAttribute('aria-hidden', 'true'); ix.append(el('span', 'rk' + (r === '10' ? ' ten' : ''), r)); ix.append(el('i', '', s));
   const ix2 = ix.cloneNode(true); ix2.classList.add('br');
   f.append(ix, ix2);
-  if (c.r >= 11) { f.append(el('div', 'face', r + s)); }
+  if (c.r >= 11) { const fc = el('div', 'face'); fc.append(el('b', '', r), el('i', '', s)); f.append(fc); }
   else if (c.r === 1) { const p = el('div', 'pips'); const i = el('i', 'big', s); i.style.left = '50%'; i.style.top = '50%'; p.append(i); f.append(p); }
   else { const p = el('div', 'pips'); for (const [x, y, fl] of PIPS[c.r]) { const i = el('i', fl ? 'flip' : '', s); i.style.left = x + '%'; i.style.top = y + '%'; p.append(i); } f.append(p); }
   e.dataset.r = c.r;
@@ -151,17 +151,18 @@ export class TableView {
       }
       s.hands.forEach((h, hi) => {
         const he = el('div', 'hand' + (isTurn && view.turn.hand === hi && view.phase === 'playing' ? ' active' : ''));
-        const ce = el('div', 'cards');
+        const ce = el('div', 'cards' + (h.cards.length > 3 ? ' many' : ''));
         for (const c of h.cards) place(ce, c, false);
         for (const c of h.cards) ce.append(this.cards.get(c.id));
         const tot = el('div', 'total');
         const chip = el('div', 'betchip ' + chipClass(h.bet), fmt$(h.bet) + (h.doubled ? '×2' : ''));
         if (h.doubled) chip.textContent = fmt$(h.bet);
-        he.append(ce, tot);
+        const trow = el('div', 'totrow'); trow.append(tot);
+        he.append(ce, trow);
         if (i === mySeat || s.hands.length === 1) he.append(chip);
         labels.push(() => {
           tot.textContent = totalLabel(h.cards, h.fromSplit);
-          if (h.result) { const r = el('div', 'res ' + h.result, ({ win: 'WIN', lose: 'LOSE', bust: 'BUST', push: 'PUSH', blackjack: 'BLACKJACK', surrender: 'SURRENDER' })[h.result]); he.append(r); }
+          if (h.result) { const r = el('div', 'res ' + h.result, ({ win: 'WIN', lose: 'LOSE', bust: 'BUST', push: 'PUSH', blackjack: 'BLACKJACK', surrender: 'SURRENDER' })[h.result]); trow.append(r); }
         });
         hands.append(he);
       });

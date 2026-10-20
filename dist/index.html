@@ -60,7 +60,7 @@
   --felt: #0d5a3a; --felt2: #0a4a30; --felt-dark: #06301f; --gold: #e2c26b; --ink: #f4f1e8; --muted: #b9c7bd;
   --bg: #07130d; --panel: #10221a; --panel2: #16302400; --line: rgba(255,255,255,.14);
   --good: #3ddc84; --warn: #ffc247; --bad: #ff6b6b; --blue: #6cb4ff;
-  --card-w: 54px; --card-h: 76px; --mini: .62;
+  --card-w: 54px; --card-h: 76px; --mini: .7;
   --fs: 16px; --tap: 48px;
   --safe-t: env(safe-area-inset-top, 0px); --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-l: env(safe-area-inset-left, 0px); --safe-r: env(safe-area-inset-right, 0px);
@@ -97,8 +97,8 @@ section.screen.play.active { display: grid; grid-template-rows: 1fr auto; }
 /* ---------------- table / felt ---------------- */
 .felt { position: relative; overflow: hidden; background: radial-gradient(120% 80% at 50% 0%, #137049 0%, var(--felt) 40%, var(--felt2) 75%, var(--felt-dark) 100%); }
 .felt::before { content: ""; position: absolute; left: -10%; right: -10%; top: 46%; height: 130%; border-radius: 50%; border: 2px solid rgba(226,194,107,.35); pointer-events: none; }
-.felt-print { position: absolute; left: 0; right: 0; top: 37%; text-align: center; color: rgba(226,194,107,.7); font-size: .66em; letter-spacing: 1.4px; text-transform: uppercase; pointer-events: none; line-height: 1.5; }
-.felt-print b { display: block; font-size: 1.25em; letter-spacing: 2px; color: rgba(226,194,107,.85); }
+.felt-print { position: absolute; left: 0; right: 0; top: max(37%, calc(var(--card-h) + 48px)); /* always below the dealer hand */ padding: 0 8px; text-align: center; color: rgba(226,194,107,.7); font-size: clamp(8px, 2.6vw, 11px); letter-spacing: .09em; text-transform: uppercase; pointer-events: none; line-height: 1.5; }
+.felt-print b { display: block; font-size: 1.27em; letter-spacing: .09em; color: rgba(226,194,107,.85); }
 .dealer { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; min-width: 140px; }
 .dealer .label { font-size: .72em; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
 .shoe { position: absolute; top: 8px; right: 10px; width: 70px; height: 62px; }
@@ -146,35 +146,45 @@ section.screen.play.active { display: grid; grid-template-rows: 1fr auto; }
 .cards { position: relative; display: flex; height: var(--card-h); }
 .seat:not(.me) .cards, .seat.mini .cards { height: calc(var(--card-h) * var(--mini)); }
 .total { font-size: .72em; font-weight: 700; background: rgba(0,0,0,.6); border-radius: 8px; padding: 0 6px; margin-top: 2px; font-variant-numeric: tabular-nums; min-height: 1.3em; }
-.res { position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); font-size: .7em; font-weight: 800; padding: 1px 6px; border-radius: 6px; white-space: nowrap; z-index: 50; animation: pop .25s ease-out both; }
+.totrow { display: flex; align-items: center; gap: 4px; margin-top: 2px; }
+.totrow .total { margin-top: 0; }
+/* Result badge sits beside the total, never over a card face. */
+.res { font-size: .64em; font-weight: 800; padding: 1px 6px; border-radius: 6px; white-space: nowrap; line-height: 1.5; animation: pop .25s ease-out both; }
 .res.win, .res.blackjack { background: var(--good); color: #062; }
 .res.lose, .res.bust { background: var(--bad); color: #300; }
 .res.push, .res.surrender { background: #ddd; color: #222; }
-@keyframes pop { from { transform: translate(-50%, -50%) scale(.4); opacity: 0; } }
+@keyframes pop { from { transform: scale(.4); opacity: 0; } }
 
 /* ---------------- cards ---------------- */
 .card { width: var(--card-w); height: var(--card-h); perspective: 600px; flex: none; position: relative; }
-.cards .card + .card { margin-left: calc(var(--card-w) * -0.58); }
+.cards .card + .card { margin-left: calc(var(--card-w) * -0.52); } /* 48% of each underlying card stays visible: the whole index column */
+.cards.many .card + .card { margin-left: calc(var(--card-w) * -0.6); }
 .seat:not(.me) .card, .seat.mini .card { width: calc(var(--card-w) * var(--mini)); height: calc(var(--card-h) * var(--mini)); }
-.seat:not(.me) .cards .card + .card { margin-left: calc(var(--card-w) * var(--mini) * -0.5); }
+.seat:not(.me) .cards .card + .card { margin-left: calc(var(--card-w) * var(--mini) * -0.47); }
+.seat:not(.me) .cards.many .card + .card { margin-left: calc(var(--card-w) * var(--mini) * -0.56); }
 .card .in { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform calc(.42s * var(--speed)) ease; }
 .card.down .in { transform: rotateY(180deg); }
 .card .f, .card .b { position: absolute; inset: 0; border-radius: 6px; backface-visibility: hidden; -webkit-backface-visibility: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.55); }
-.card .f { background: #fdfcf7; color: #111; overflow: hidden; border: 1px solid #c9c3b3; }
+.card .f { background: #fdfcf7; color: #0a0a0a; overflow: hidden; border: 1px solid #c9c3b3; }
 .card .b { transform: rotateY(180deg); background: #9c1d2b repeating-linear-gradient(45deg, rgba(255,255,255,.12) 0 3px, transparent 3px 7px); border: 3px solid #fdfcf7; }
-.card.red .f { color: #c1121f; }
+.card.red .f { color: #d00a1e; }
 html.fourcolor .card.s2 .f { color: #1546b8; } html.fourcolor .card.s3 .f { color: #127a2a; }
-.card .ix { position: absolute; top: 2px; left: 3px; font-weight: 800; font-size: calc(var(--card-w) * .3); line-height: .95; text-align: center; letter-spacing: -1px; }
-.card .ix i { display: block; font-style: normal; font-size: .82em; letter-spacing: 0; }
-.card .ix.br { top: auto; left: auto; bottom: 2px; right: 3px; transform: rotate(180deg); }
-.card .pips { position: absolute; inset: 14% 20%; }
-.card .pips i { position: absolute; font-style: normal; transform: translate(-50%, -50%); font-size: calc(var(--card-w) * .24); line-height: 1; }
+.card .ix { /* corner index: its own clear column, left 30% of the card */
+  position: absolute; top: 3px; left: 2px; width: calc(var(--card-w) * .28); z-index: 1;
+  font-family: "Avenir Next Condensed", "Roboto Condensed", "Arial Narrow", "Helvetica Neue", system-ui, sans-serif; font-stretch: condensed;
+  font-weight: 800; font-size: calc(var(--card-w) * .31); line-height: 1; text-align: center; letter-spacing: 0; }
+.card .ix .rk { display: block; white-space: nowrap; }
+.card .ix .rk.ten { display: inline-block; letter-spacing: -.04em; transform: scaleX(.72); margin: 0 -.3em; } /* narrow "10", digits never touch */
+.card .ix i { display: block; font-style: normal; font-size: .74em; line-height: 1; margin-top: 1px; }
+.card .ix.br { display: none; } /* rotated bottom index dropped: illegible at phone sizes and hidden by the fan anyway */
+.card .pips { position: absolute; top: 10%; bottom: 10%; left: 47%; right: 15%; } /* inset clear of the index column */
+.card .pips i { position: absolute; font-style: normal; transform: translate(-50%, -50%); font-size: calc(var(--card-w) * .2); line-height: 1; }
 .card .pips i.flip { transform: translate(-50%, -50%) rotate(180deg); }
-.card .pips i.big { font-size: calc(var(--card-w) * .55); }
-.card .face { position: absolute; inset: 16% 18%; border: 1.5px solid currentColor; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: calc(var(--card-w) * .42); background: linear-gradient(135deg, rgba(226,194,107,.35), rgba(255,255,255,0) 60%); }
+.card .pips i.big { font-size: calc(var(--card-w) * .46); }
+.card .face { position: absolute; inset: 10% 10% 10% 36%; flex-direction: column; line-height: 1; border: 1.5px solid currentColor; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: calc(var(--card-w) * .42); background: linear-gradient(135deg, rgba(226,194,107,.35), rgba(255,255,255,0) 60%); }
 .seat:not(.me) .card .pips, .seat:not(.me) .card .face, .seat:not(.me) .card .ix.br { display: none; }
-.seat:not(.me) .card .ix { font-size: calc(var(--card-w) * var(--mini) * .36); }
-.seat:not(.me) .card .ix::after { content: attr(data-s); display: block; font-size: 1.15em; }
+.seat:not(.me) .card .ix { font-size: calc(var(--card-w) * var(--mini) * .4); width: calc(var(--card-w) * var(--mini) * .42); top: 2px; left: 1px; }
+.seat:not(.me) .card .ix::after { content: attr(data-s); display: block; font-size: .9em; margin-top: 1px; }
 .seat:not(.me) .card .ix i { display: none; }
 .card.flight { position: fixed; z-index: 100; margin: 0 !important; }
 
@@ -293,7 +303,14 @@ canvas.spark { width: 100%; height: 150px; display: block; background: #0b1a13; 
 html.contrast { --muted: #e1e9e3; --line: rgba(255,255,255,.35); }
 html.contrast .card .f { border-color: #000; }
 .total:empty, .seat .act:empty { visibility: hidden; }
+
+@media (max-width: 360px) { :root { --card-w: 50px; --card-h: 70px; --mini: .64; } }
+.card .face b { font-weight: 800; }
+.card .face i { font-style: normal; font-size: .62em; margin-top: 2px; }
+/* Very short portrait screens (iPhone SE 1st gen 320x568): the felt has no free band for the rules print. */
+@media (orientation: portrait) and (max-height: 640px) { .felt-print { display: none; } }
 </style>
+<meta name="build" content="2026.10.19-1821">
 </head>
 <body>
 <div id="app">
@@ -1798,13 +1815,16 @@ html.contrast .card .f { border-color: #000; }
     e.setAttribute("aria-label", `${{ A: "Ace", J: "Jack", Q: "Queen", K: "King" }[r] || r} of ${["spades", "hearts", "diamonds", "clubs"][c.s]}`);
     const ix = el("div", "ix");
     ix.dataset.s = s;
-    ix.append(document.createTextNode(r));
+    ix.setAttribute("aria-hidden", "true");
+    ix.append(el("span", "rk" + (r === "10" ? " ten" : ""), r));
     ix.append(el("i", "", s));
     const ix2 = ix.cloneNode(true);
     ix2.classList.add("br");
     f.append(ix, ix2);
     if (c.r >= 11) {
-      f.append(el("div", "face", r + s));
+      const fc = el("div", "face");
+      fc.append(el("b", "", r), el("i", "", s));
+      f.append(fc);
     } else if (c.r === 1) {
       const p = el("div", "pips");
       const i = el("i", "big", s);
@@ -1957,19 +1977,21 @@ html.contrast .card .f { border-color: #000; }
         }
         s.hands.forEach((h, hi) => {
           const he = el("div", "hand" + (isTurn && view.turn.hand === hi && view.phase === "playing" ? " active" : ""));
-          const ce = el("div", "cards");
+          const ce = el("div", "cards" + (h.cards.length > 3 ? " many" : ""));
           for (const c of h.cards) place(ce, c, false);
           for (const c of h.cards) ce.append(this.cards.get(c.id));
           const tot = el("div", "total");
           const chip = el("div", "betchip " + chipClass(h.bet), fmt$(h.bet) + (h.doubled ? "\xD72" : ""));
           if (h.doubled) chip.textContent = fmt$(h.bet);
-          he.append(ce, tot);
+          const trow = el("div", "totrow");
+          trow.append(tot);
+          he.append(ce, trow);
           if (i === mySeat || s.hands.length === 1) he.append(chip);
           labels.push(() => {
             tot.textContent = totalLabel(h.cards, h.fromSplit);
             if (h.result) {
               const r = el("div", "res " + h.result, { win: "WIN", lose: "LOSE", bust: "BUST", push: "PUSH", blackjack: "BLACKJACK", surrender: "SURRENDER" }[h.result]);
-              he.append(r);
+              trow.append(r);
             }
           });
           hands.append(he);
@@ -3875,7 +3897,7 @@ html.contrast .card .f { border-color: #000; }
       }))
     );
     h.append(c4);
-    h.append(el("p", "muted", "Play money only. Practice here; never use a phone or any device to count at a real table (illegal in Nevada and most states). Settings, stats and progress are stored only on this device."));
+    h.append(el("p", "muted", "Play money only. Practice here; never use a phone or any device to count at a real table (illegal in Nevada and most states). Settings, stats and progress are stored only on this device."), el("p", "muted", `Build ${true ? "2026.10.19-1821" : "dev"}`));
   }
   function refreshAll() {
     if (current === "play" && driver && driver.view) renderActions(driver.view, table.wait() > 0);
@@ -3900,7 +3922,7 @@ html.contrast .card .f { border-color: #000; }
   });
   if (/join=/.test(location.hash)) show("online");
   else show("play");
-  window.__bj = { get driver() {
+  window.__bj = { cardEl, get driver() {
     return driver;
   }, get stats() {
     return stats;

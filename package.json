@@ -7,7 +7,8 @@
     "build": "node build.mjs",
     "test": "node --test test/engine.test.mjs test/strategy.test.mjs test/counting.test.mjs",
     "test:worker": "node --test test/worker.test.mjs",
-    "test:ui": "node test/ui.test.cjs"
+    "test:ui": "node test/ui.test.cjs",
+    "test:cards": "node test/cards.test.cjs"
   },
   "devDependencies": {
     "esbuild": "^0.25.12",

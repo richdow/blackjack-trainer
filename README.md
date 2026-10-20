@@ -31,6 +31,7 @@ npm test                           # engine + strategy verification + counting
 cd worker && npx wrangler dev --port 8797 --var ALLOWED_ORIGINS:http://127.0.0.1:8768 --var ALLOW_TEST_IP:1
 API=http://127.0.0.1:8797 npm run test:worker
 (cd dist && python3 -m http.server 8768) & LOCALAPI=1 npm run test:ui
+npm run test:cards                 # card legibility geometry: all ranks, 320/390/412/844 widths
 ```
 
 ## Sources

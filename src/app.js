@@ -8,7 +8,7 @@ import { generateChart, rulesKey, gradeDecision, gradeInsurance, chartAction, co
 import { shoeCounts } from './evcalc.js';
 import { trueCount, decksRemainingEstimate, betAdvice, betUnits } from './counting.js';
 import { LocalDriver, NetDriver, createTable, PERSONAS, API_BASE } from './drivers.js';
-import { TableView, el, money, totalLabel } from './render.js';
+import { TableView, el, money, totalLabel, cardEl } from './render.js';
 import { loadSettings, saveSettings, loadStats, saveStats, recordDecision, recordHand, categoryOf, emptyStats } from './store.js';
 import { lessons, chartHTML } from './learn.js';
 import { DRILLS, runDrill } from './drills.js';
@@ -747,7 +747,7 @@ function renderSettings() {
     field('Sounds', 'Off by default', () => sw(S.sound, (v) => { S.sound = v; saveSettings(S); blip(); })),
   );
   h.append(c4);
-  h.append(el('p', 'muted', 'Play money only. Practice here; never use a phone or any device to count at a real table (illegal in Nevada and most states). Settings, stats and progress are stored only on this device.'));
+  h.append(el('p', 'muted', 'Play money only. Practice here; never use a phone or any device to count at a real table (illegal in Nevada and most states). Settings, stats and progress are stored only on this device.'), el('p', 'muted', `Build ${typeof __BUILD__ !== 'undefined' ? __BUILD__ : 'dev'}`));
 }
 
 /* ------------------------------ boot ----------------------------------- */
@@ -760,4 +760,4 @@ chartFor(S.rules); edgeFor(S.rules);
 addEventListener('resize', () => { if (driver && driver.view && current === 'play') { table.render(driver.view, { mySeat: driver.mySeat }); renderChatPanel(); } });
 document.addEventListener('visibilitychange', () => { if (document.hidden) { saveStats(stats); saveSession(); } });
 if (/join=/.test(location.hash)) show('online'); else show('play');
-window.__bj = { get driver() { return driver; }, get stats() { return stats; }, show, setMode, startOnline, get session() { return session; } };
+window.__bj = { cardEl, get driver() { return driver; }, get stats() { return stats; }, show, setMode, startOnline, get session() { return session; } };
