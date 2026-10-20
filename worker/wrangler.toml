@@ -1,0 +1,27 @@
+# Blackjack Trainer online tables: Cloudflare Workers FREE plan only.
+# Separate from (and does not touch) the perimeter-notes-groups worker.
+name = "blackjack-tables"
+main = "src/index.js"
+compatibility_date = "2025-09-01"
+workers_dev = true
+preview_urls = false
+
+[vars]
+ALLOWED_ORIGINS = "https://richdow.github.io"
+MAX_TABLES = "100"
+
+# No request logs/traces: chat contents are never logged anywhere.
+[observability]
+enabled = false
+
+[[durable_objects.bindings]]
+name = "TABLE"
+class_name = "Table"
+
+[[durable_objects.bindings]]
+name = "DIRECTORY"
+class_name = "Directory"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Table", "Directory"]

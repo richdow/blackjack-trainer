@@ -1,0 +1,98 @@
+<!doctype html>
+<!--
+  ============================================================================
+  BLACKJACK TRAINER  (single-file build of /src; play money only)
+  ============================================================================
+  README
+  ------
+  What it is: a casino-accurate blackjack table (1-7 seats, AI players or
+  friends online with chat) that grades every decision you make and teaches
+  basic strategy, Hi-Lo card counting, true count, bet sizing and index plays.
+
+  Layers (each is its own module in /src, bundled in this order):
+    engine.js    RULES + GAME ENGINE. Pure JSON state machine. The same file runs
+                 in the Cloudflare Worker for online tables (server-authoritative).
+    evcalc.js    EV calculator: exact dealer probabilities, composition-dependent
+                 hit/stand/double/split/surrender EVs.
+    strategy.js  Basic-strategy chart generator (from evcalc, for the ACTIVE
+                 rules), decision grading by EV loss, Illustrious 18 + Fab 4,
+                 house-edge calculator and published rule-variation table.
+    counting.js  Hi-Lo running count, true count, decks-remaining estimate,
+                 bet ramp.
+    drivers.js   LocalDriver (engine in this tab + AI seats) and NetDriver
+                 (WebSocket to the Durable Object) with one interface.
+    render.js / app.js / learn.js / drills.js / store.js   UI + education layer.
+
+  Configure rules: Settings tab -> Table rules (decks 1-6, H17/S17, 3:2 or 6:5,
+    double any/9-11/10-11, DAS, split to 2-4 hands, RSA, hit split aces, late
+    surrender, penetration, minimum bet). Defaults live in DEFAULT_RULES
+    (engine.js): 6 decks, H17, 3:2, double any two, no DAS, split to 4, no RSA,
+    late surrender, 75% penetration. Deck-count changes apply at the next
+    shuffle ("Shuffle now" applies immediately), exactly like a casino.
+    The strategy chart, grading and house edge recompute for the new rules.
+
+  Enable counting: Settings -> Training -> "Show count" (running count, decks
+    left as read from the discard tray, true count, bet suggestion), and
+    "Grade with index plays" to be graded on I18/Fab 4 deviations. Or tap the
+    mode chip -> "Count practice": count hidden (tap the box to peek), bets and
+    deviations graded, surprise running-count checks between hands.
+
+  Grading: Correct = the chart play (or index play); Slightly suboptimal = costs
+    < 0.5% of the bet (GRADE.slight in strategy.js); Mistake = 0.5% or more.
+  Data: localStorage only (bjt.* keys). Nothing is sent anywhere except online
+    table traffic (nickname, bets, actions, chat) to blackjack-tables.
+  ============================================================================
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#07130d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Blackjack">
+<meta name="description" content="Blackjack trainer: casino-accurate rules, basic strategy feedback, Hi-Lo card counting drills, and online tables with chat. Play money only.">
+<title>Blackjack Trainer</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230d5a3a'/%3E%3Crect x='14' y='10' width='30' height='42' rx='4' fill='%23fff'/%3E%3Ctext x='29' y='40' font-size='22' text-anchor='middle' font-family='Arial' font-weight='bold' fill='%23c1121f'%3EA%3C/text%3E%3C/svg%3E">
+<style>/*__CSS__*/</style>
+</head>
+<body>
+<div id="app">
+  <header class="top">
+    <h1><b>♠</b> Blackjack</h1>
+    <button class="chip-btn" id="modeBtn" aria-label="Training mode">Coach</button>
+    <div class="bank" id="bank" aria-label="Bankroll">—</div>
+  </header>
+  <main>
+    <section class="screen play" data-screen="play" aria-label="Table">
+      <div id="felt" role="region" aria-label="Blackjack table"></div>
+      <div class="actions" id="actions">
+        <div class="fb" id="fb" role="status" aria-live="polite"></div>
+        <div class="row" style="gap:6px">
+          <button class="btn small ghost" id="chartBtn">📋 Chart</button>
+          <button class="btn small ghost" id="reviewBtn">📝 Review</button>
+          <button class="btn small ghost" id="chatFab" style="display:none">💬 Chat <span class="badge" style="display:none"></span></button>
+        </div>
+      </div>
+    </section>
+    <section class="screen" data-screen="online" aria-label="Online"></section>
+    <section class="screen" data-screen="learn" aria-label="Learn"></section>
+    <section class="screen" data-screen="drills" aria-label="Drills"></section>
+    <section class="screen" data-screen="stats" aria-label="Stats"></section>
+    <section class="screen" data-screen="settings" aria-label="Settings"></section>
+  </main>
+  <nav class="tabs" role="tablist">
+    <button data-go="play" role="tab"><span class="i">🃏</span>Play</button>
+    <button data-go="online" role="tab"><span class="i">👥</span>Online</button>
+    <button data-go="learn" role="tab"><span class="i">📖</span>Learn</button>
+    <button data-go="drills" role="tab"><span class="i">🎯</span>Drills</button>
+    <button data-go="stats" role="tab"><span class="i">📈</span>Stats</button>
+    <button data-go="settings" role="tab"><span class="i">⚙️</span>Settings</button>
+  </nav>
+</div>
+<div class="overlay" id="overlay"><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
+<script>window.__DEFAULT_CHART__ = /*__CHART__*/null;</script>
+<script>/*__JS__*/</script>
+</body>
+</html>
